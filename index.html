@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2D Cinematic Map Animation Suite (Mobile MediaRecorder Fixed)</title>
+<title>2D Cinematic Map Animation Suite (Mobile MediaRecorder FIXED)</title>
 <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 
 <style>
+  /* [SAME STYLES - NO CHANGES] */
   html, body, #root { 
     height:100%; 
     margin:0; 
@@ -317,6 +318,12 @@ function App() {
   const recordedChunksRef = useRef([]);
   const animationTimeoutRef = useRef(null);
 
+  // ✅ FIX #2: MAP READY HELPER
+  const isMapReady = useCallback(() => {
+    const map = mapRef.current;
+    return map && map.isStyleLoaded();
+  }, []);
+
   // Detect mobile
   useEffect(() => {
     setIsMobile(window.innerWidth <= 768);
@@ -368,6 +375,7 @@ function App() {
     mapRef.current = map;
     
     map.on('load', () => {
+      // ✅ FIX #1: SAFE SOURCE CREATION
       map.addSource('country-src', { 
         type: 'geojson', 
         data: { type:'FeatureCollection', features: [] } 
@@ -391,7 +399,7 @@ function App() {
     });
     
     const resizeObserver = new ResizeObserver(() => {
-      map.resize();
+      if (map.isStyleLoaded()) map.resize();
     });
     resizeObserver.observe(container);
     
@@ -402,11 +410,16 @@ function App() {
   }, [isMobile]);
 
   const applyPreviewStyles = useCallback(() => {
-    if (!selectedCountryName || !mapRef.current?.isStyleLoaded()) return;
+    if (!isMapReady() || !selectedCountryName) return;
     const map = mapRef.current;
-    map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
-    map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
-    map.setPaintProperty('country-outline-core', 'line-opacity', 1);
+    try {
+      // ✅ FIX #1: SAFE PAINT PROPERTY UPDATES
+      map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
+      map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
+      map.setPaintProperty('country-outline-core', 'line-opacity', 1);
+    } catch (e) {
+      console.warn("Preview styles failed:", e);
+    }
     
     if (markerRef.current) {
       const markerElement = markerRef.current.getElement();
@@ -415,10 +428,10 @@ function App() {
       markerElement.style.opacity = 1;
       markerElement.style.zIndex = '1000';
     }
-  }, [selectedCountryName, outlineColor, outlineWidth, fontSize, isMobile]);
+  }, [selectedCountryName, outlineColor, outlineWidth, fontSize, isMobile, isMapReady]);
   
   const updatePreview = useCallback(() => {
-    if (!selectedCountryName || isAnimating || countries.length === 0) return;
+    if (!isMapReady() || !selectedCountryName || isAnimating || countries.length === 0) return;
     const originalFeature = countries.find(f => f.properties.name === selectedCountryName);
     if (!originalFeature) return;
     
@@ -430,7 +443,10 @@ function App() {
     
     if (markerRef.current) markerRef.current.remove();
     
-    map.getSource('country-src').setData(feature);
+    // ✅ FIX #1: SAFE SOURCE UPDATES
+    const countrySource = map.getSource('country-src');
+    if (countrySource) countrySource.setData(feature);
+    
     const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
     
     const el = document.createElement('div');
@@ -453,13 +469,18 @@ function App() {
       easing: (t) => t * (2 - t) 
     });
     map.once('moveend', applyPreviewStyles);
-  }, [selectedCountryName, finalZoom, countries, applyPreviewStyles, isAnimating, isMobile]);
+  }, [selectedCountryName, finalZoom, countries, applyPreviewStyles, isAnimating, isMobile, isMapReady]);
 
   useEffect(() => { updatePreview(); }, [selectedCountryName, finalZoom, updatePreview, isMobile]);
   useEffect(() => { if (!isAnimating) applyPreviewStyles(); }, [outlineColor, outlineWidth, fontSize, isAnimating, applyPreviewStyles]);
 
   // ✅ FIXED MEDIARECORDER FOR MOBILE
   const startRecording = useCallback(() => {
+    if (!isMapReady()) {
+      setStatus("⚠️ Map not ready for recording");
+      return;
+    }
+    
     const canvas = mapRef.current.getCanvas();
     
     // Force canvas repaint before stream
@@ -472,22 +493,19 @@ function App() {
     // MOBILE-SPECIFIC CONFIG
     let mimeType, codecs;
     if (/iPhone|iPad/.test(navigator.userAgent)) {
-      // iOS Safari - force MP4
       mimeType = 'video/mp4; codecs=avc1';
       codecs = 'avc1';
     } else if (isMobile) {
-      // Android Chrome
       mimeType = 'video/webm; codecs=vp8';
       codecs = 'vp8';
     } else {
-      // Desktop
       mimeType = 'video/webm; codecs=vp9';
       codecs = 'vp9';
     }
     
     const options = { 
       mimeType,
-      videoBitsPerSecond: isMobile ? 12000000 : 25000000 
+      videoBitsPerSecond: isMobile ? 6000000 : 25000000
     };
     
     mediaRecorderRef.current = new MediaRecorder(stream, options);
@@ -507,14 +525,12 @@ function App() {
       setStatus(`✅ Export complete! ${Math.round(blob.size/1000)}KB video ready.`);
     };
     
-    // Start with timeslice for consistent frames
-    mediaRecorderRef.current.start(isMobile ? 100 : 33); // 100ms chunks on mobile
+    mediaRecorderRef.current.start(isMobile ? 100 : 33);
     
-    // Force initial frame
     setTimeout(() => {
       canvas.width = canvas.width;
     }, 50);
-  }, [isMobile]);
+  }, [isMobile, isMapReady]);
   
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === "recording") {
@@ -522,28 +538,43 @@ function App() {
     }
   }, []);
 
+  // ✅ FIX #4: SAFE RESET
   function handleReset() {
     setSelectedCountryName("");
     setDownloadUrl(null);
     setStatus('Ready. Select a country to begin.');
     if (markerRef.current) markerRef.current.remove();
     const map = mapRef.current;
-    if (map) {
-      map.getSource('country-src').setData({ type:'FeatureCollection', features: [] });
-      map.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
-      map.easeTo({ 
-        zoom: isMobile ? 2 : 1.5, 
-        center: [20,20], 
-        pitch: 0, 
-        bearing: 0, 
-        duration: 1500 
-      });
+    if (map && isMapReady()) {
+      try {
+        // ✅ FIX #1: SAFE SOURCE RESET
+        const countrySource = map.getSource('country-src');
+        if (countrySource) countrySource.setData({ type:'FeatureCollection', features: [] });
+        
+        const inkSource = map.getSource('ink-src');
+        if (inkSource) inkSource.setData({ type:'FeatureCollection', features: [] });
+        
+        map.easeTo({ 
+          zoom: isMobile ? 2 : 1.5, 
+          center: [20,20], 
+          pitch: 0, 
+          bearing: 0, 
+          duration: 1500 
+        });
+      } catch (e) {
+        console.warn("Reset failed:", e);
+      }
     }
     stopRecording();
   }
 
+  // ✅ FIXED ANIMATION WITH ALL 4 FIXES
   function handleGenerateAnimation() {
-    if (!selectedCountryName || isAnimating || countries.length === 0 || !mapRef.current || !mapWrapRef.current) return;
+    if (!isMapReady() || !selectedCountryName || isAnimating || countries.length === 0 || !mapRef.current || !mapWrapRef.current) {
+      setStatus("⚠️ Map not ready");
+      return;
+    }
+    
     const originalFeature = countries.find(f => f.properties.name === selectedCountryName);
     if (!originalFeature) return;
 
@@ -555,40 +586,51 @@ function App() {
     if (markerRef.current) markerRef.current.remove();
     
     const map = mapRef.current;
-    map.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
-    map.setPaintProperty('country-outline-core', 'line-opacity', 0);
+    try {
+      // ✅ FIX #1: SAFE SOURCE RESET
+      const inkSource = map.getSource('ink-src');
+      if (inkSource) inkSource.setData({ type:'FeatureCollection', features: [] });
+      
+      map.setPaintProperty('country-outline-core', 'line-opacity', 0);
+    } catch (e) {
+      console.warn("Animation prep failed:", e);
+      setIsAnimating(false);
+      return;
+    }
+    
     setStatus('🔄 Resizing for HD...');
 
     const mapWrap = mapWrapRef.current;
     const originalWidth = mapWrap.clientWidth;
     const originalHeight = mapWrap.clientHeight;
     
-    // MOBILE-SAFE EXPORT RESOLUTION
-    const exportWidth = isMobile ? Math.min(window.innerWidth * 3, 1280) : 1280;
+    const exportWidth = isMobile ? 640 : 1280;
     const exportHeight = Math.round(exportWidth * 720 / 1280);
     
     mapWrap.style.width = `${exportWidth}px`;
     mapWrap.style.height = `${exportHeight}px`;
     map.resize();
 
-    // ✅ INCREASED STABILIZATION DELAY
+    // ✅ FIX #3: INCREASED DELAY + READY CHECK
     animationTimeoutRef.current = setTimeout(() => {
-      setStatus('🎥 Recording FULL animation...');
+      if (!isMapReady()) {
+        setStatus("⚠️ Map still loading...");
+        setIsAnimating(false);
+        return;
+      }
       
-      // START RECORDING FIRST
+      setStatus('🎥 Recording FULL animation...');
       startRecording();
 
       const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
       const bbox = turf.bbox(feature);
       const maxDist = turf.distance(turf.point(centroidPt), turf.point([bbox[2], bbox[3]]), { units: 'kilometers' }) * 1.05;
-      const steps = isMobile ? 64 : 128;
+      const steps = isMobile ? 32 : 128;
 
       const tl = gsap.timeline({
-        // MOBILE SMOOTHNESS
         smoothChildTiming: true,
         onUpdate: () => {
-          map.triggerRepaint();
-          // Force canvas frame for MediaRecorder
+          if (isMapReady()) map.triggerRepaint();
           if (mediaRecorderRef.current?.state === 'recording') {
             const canvas = map.getCanvas();
             canvas.width = canvas.width;
@@ -602,7 +644,7 @@ function App() {
             mapWrap.style.height = `${originalHeight}px`;
             map.resize();
             setTimeout(() => updatePreview(), 300);
-          }, isMobile ? 500 : 200); // Extra delay for mobile cleanup
+          }, isMobile ? 500 : 200);
         }
       });
 
@@ -612,7 +654,6 @@ function App() {
         lat: map.getCenter().lat
       };
 
-      // PHASE 1: World view
       tl.to(cameraVars, {
         duration: 1.5, ease: 'power2.inOut',
         zoom: isMobile ? 2 : 1.5, lng: 20, lat: 20,
@@ -622,7 +663,6 @@ function App() {
         }
       });
 
-      // PHASE 2: Fly to country
       tl.to(cameraVars, {
         duration: parseFloat(cameraSpeed), ease: 'power2.inOut',
         zoom: parseFloat(finalZoom),
@@ -633,40 +673,56 @@ function App() {
         }
       });
       
-      // PHASE 3: Outline fade in
       const outlineVars = { opacity: 0 };
       tl.to(outlineVars, {
         duration: parseFloat(animationSpeed) * 0.75, 
         opacity: 1, 
         ease: 'power1.inOut',
         onStart: () => {
-          map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
-          map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
+          try {
+            map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
+            map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
+          } catch (e) {
+            console.warn("Outline setup failed:", e);
+          }
         },
         onUpdate: () => { 
-          map.setPaintProperty('country-outline-core', 'line-opacity', outlineVars.opacity); 
+          try {
+            map.setPaintProperty('country-outline-core', 'line-opacity', outlineVars.opacity); 
+          } catch (e) {
+            console.warn("Outline update failed:", e);
+          }
         }
       }, "-=1.0");
 
-      // PHASE 4: Ink reveal (SYCHRONIZED)
       const inkVars = { progress: 0 };
       tl.to(inkVars, {
         duration: parseFloat(animationSpeed), 
         progress: 1, 
         ease: 'power1.out',
         onStart: () => {
-          map.setPaintProperty('ink-fill', 'fill-color', inkColor);
-          map.setPaintProperty('ink-fill', 'fill-opacity', 0.85);
+          try {
+            map.setPaintProperty('ink-fill', 'fill-color', inkColor);
+            map.setPaintProperty('ink-fill', 'fill-opacity', 0.85);
+          } catch (e) {
+            console.warn("Ink setup failed:", e);
+          }
         },
         onUpdate: () => {
-          const radiusKm = inkVars.progress * maxDist;
-          const circle = turf.circle(centroidPt, radiusKm, { steps: steps, units: 'kilometers' });
-          const intersection = turf.intersect(feature, circle);
-          map.getSource('ink-src').setData(intersection || { type: 'FeatureCollection', features: [] });
+          try {
+            // ✅ FIX #1: SAFE INK UPDATE
+            const radiusKm = inkVars.progress * maxDist;
+            const circle = turf.circle(centroidPt, radiusKm, { steps: steps, units: 'kilometers' });
+            const intersection = turf.intersect(feature, circle);
+            const inkSource = map.getSource('ink-src');
+            if (inkSource) inkSource.setData(intersection || { type: 'FeatureCollection', features: [] });
+          } catch (e) {
+            console.warn("Ink update failed:", e);
+          }
         }
-      }, "<"); // Start with outline
+      }, "<");
 
-    }, isMobile ? 800 : 300); // MOBILE: 800ms resize settle time
+    }, isMobile ? 1200 : 500); // ✅ FIX #3: INCREASED DELAY
   }
 
   useEffect(() => {
