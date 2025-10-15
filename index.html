@@ -3,41 +3,260 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2D Cinematic Map Animation Suite (Stable & Functional)</title>
+<title>2D Cinematic Map Animation Suite (Mobile Responsive)</title>
 <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 
 <style>
-  html, body, #root { height:100%; margin:0; background:#071526; font-family:'Poppins', sans-serif; color:#e6eef8; overflow: hidden; }
-  .app { display:flex; flex-direction: row; height:100%; gap:12px; padding:12px; box-sizing:border-box; }
-  .panel { width:400px; max-width:40%; background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:10px 20px; box-shadow:0 6px 18px rgba(0,0,0,0.6); display:flex; flex-direction:column; overflow-y:auto; flex-shrink: 0; }
-  .map-wrap { flex:1; position:relative; border-radius:12px; overflow:hidden; box-shadow:0 6px 24px rgba(2,6,23,0.6); min-height: 0; }
-  #map { position:absolute; inset:0; }
-  h2 { margin:10px 0 16px 0; font-size:18px; font-weight:700; text-align: center;}
-  fieldset { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 16px; padding: 16px; }
-  legend { font-size: 14px; font-weight: 700; padding: 0 8px; color: #00aaff; }
-  label { font-size:12px; color:rgba(255,255,255,0.75); font-weight:400; display:block; margin-bottom:6px; }
-  select, input { width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.03); color:#e6eef8; font-family:'Poppins', sans-serif; margin-bottom:10px; }
-  input[type="range"] { padding: 0; margin-bottom: 10px; }
-  input[type="color"] { padding: 4px 6px; height: 40px; }
-  option { color:#0b1220; background:#fff; }
-  .status { font-size:13px; color:rgba(255,255,255,0.75); margin-top:auto; padding-top:10px; font-weight:400; text-align: center; }
-  .country-marker-label { color: #fff; font-weight: 700; text-shadow: 0 0 8px rgba(0,0,0,0.9); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-  .button-group { display:flex; gap: 10px; }
-  button { padding: 12px; font-size: 16px; font-weight: 700; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 10px; width: 100%; }
-  button#ready-button { background-color: #0077cc; }
-  button#ready-button:hover:not(:disabled) { background-color: #00aaff; }
-  button#reset-button { background-color: #555; }
-  button#reset-button:hover:not(:disabled) { background-color: #777; }
-  button:disabled { background-color: #333; color: #777; cursor: not-allowed; }
-  #download-link { color: #00aaff; text-decoration: none; font-weight: bold; margin-top: 15px; display: none; text-align: center;}
+  html, body, #root { 
+    height:100%; 
+    margin:0; 
+    background:#071526; 
+    font-family:'Poppins', sans-serif; 
+    color:#e6eef8; 
+    overflow: hidden; 
+  }
+  
+  .app { 
+    display:flex; 
+    flex-direction: column; 
+    height:100%; 
+    gap:8px; 
+    padding:8px; 
+    box-sizing:border-box; 
+  }
+  
+  .panel { 
+    width:100%; 
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); 
+    border-radius:12px; 
+    padding:12px; 
+    box-shadow:0 6px 18px rgba(0,0,0,0.6); 
+    display:flex; 
+    flex-direction:column; 
+    overflow-y:auto; 
+    flex-shrink: 0; 
+    max-height: 50vh;
+  }
+  
+  .map-wrap { 
+    flex:1; 
+    position:relative; 
+    border-radius:12px; 
+    overflow:hidden; 
+    box-shadow:0 6px 24px rgba(2,6,23,0.6); 
+    min-height: 200px;
+    height: 0; /* Let flex handle height */
+  }
+  
+  #map { 
+    position:absolute; 
+    inset:0; 
+    width: 100%; 
+    height: 100%;
+  }
+  
+  h2 { 
+    margin:10px 0 12px 0; 
+    font-size:16px; 
+    font-weight:700; 
+    text-align: center;
+  }
+  
+  fieldset { 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 8px; 
+    margin-bottom: 12px; 
+    padding: 12px; 
+  }
+  
+  legend { 
+    font-size: 12px; 
+    font-weight: 700; 
+    padding: 0 6px; 
+    color: #00aaff; 
+  }
+  
+  label { 
+    font-size:11px; 
+    color:rgba(255,255,255,0.75); 
+    font-weight:400; 
+    display:block; 
+    margin-bottom:4px; 
+  }
+  
+  select, input { 
+    width:100%; 
+    padding:6px 8px; 
+    border-radius:8px; 
+    border:1px solid rgba(255,255,255,0.06); 
+    background:rgba(255,255,255,0.03); 
+    color:#e6eef8; 
+    font-family:'Poppins', sans-serif; 
+    margin-bottom:8px; 
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  input[type="range"] { 
+    padding: 0; 
+    margin-bottom: 8px; 
+    height: 24px;
+  }
+  
+  input[type="color"] { 
+    padding: 2px 4px; 
+    height: 36px; 
+  }
+  
+  option { 
+    color:#0b1220; 
+    background:#fff; 
+  }
+  
+  .status { 
+    font-size:12px; 
+    color:rgba(255,255,255,0.75); 
+    padding:8px 0; 
+    font-weight:400; 
+    text-align: center; 
+  }
+  
+  .country-marker-label { 
+    color: #fff; 
+    font-weight: 700; 
+    text-shadow: 0 0 8px rgba(0,0,0,0.9), 0 0 12px rgba(0,170,255,0.8); 
+    pointer-events: none; 
+    opacity: 1 !important; 
+    transition: all 0.3s ease;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    font-size: 16px !important;
+    min-width: max-content;
+  }
+  
+  .button-group { 
+    display:flex; 
+    gap: 8px; 
+    flex-wrap: wrap;
+  }
+  
+  button { 
+    padding: 10px 12px; 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: #fff; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  button#ready-button { 
+    background-color: #0077cc; 
+  }
+  
+  button#ready-button:hover:not(:disabled) { 
+    background-color: #00aaff; 
+  }
+  
+  button#reset-button { 
+    background-color: #555; 
+  }
+  
+  button#reset-button:hover:not(:disabled) { 
+    background-color: #777; 
+  }
+  
+  button:disabled { 
+    background-color: #333; 
+    color: #777; 
+    cursor: not-allowed; 
+  }
+  
+  #download-link { 
+    color: #00aaff; 
+    text-decoration: none; 
+    font-weight: bold; 
+    margin-top: 10px; 
+    display: block; 
+    text-align: center;
+    padding: 8px;
+    background: rgba(0,170,255,0.1);
+    border-radius: 6px;
+  }
 
+  /* MOBILE OPTIMIZATIONS */
   @media (max-width: 768px) {
-    .app { flex-direction: column; }
-    .panel { width: 100%; max-width: 100%; max-height: 45vh; flex-shrink: 1; }
-    .map-wrap { height: 100%; }
+    .app { 
+      padding: 4px; 
+      gap: 4px;
+    }
+    
+    .panel { 
+      max-height: 45vh; 
+      padding: 8px; 
+      border-radius: 8px;
+    }
+    
+    h2 { 
+      font-size: 14px; 
+      margin: 8px 0 10px 0;
+    }
+    
+    fieldset { 
+      padding: 8px; 
+      margin-bottom: 8px;
+    }
+    
+    legend { 
+      font-size: 11px;
+    }
+    
+    label { 
+      font-size: 10px;
+    }
+    
+    select, input { 
+      padding: 5px 6px; 
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    
+    .country-marker-label {
+      font-size: 14px !important;
+      padding: 3px 6px;
+      max-width: 90vw;
+      white-space: normal;
+      text-align: center;
+    }
+    
+    button { 
+      padding: 8px 10px; 
+      font-size: 13px;
+    }
+    
+    .status { 
+      font-size: 11px;
+    }
+  }
+
+  /* EXTRA SMALL MOBILE */
+  @media (max-width: 480px) {
+    .panel { 
+      max-height: 40vh;
+    }
+    
+    .country-marker-label {
+      font-size: 12px !important;
+    }
   }
 </style>
 </head>
@@ -85,12 +304,13 @@ function App() {
   const [inkColor, setInkColor] = useState('#ff0000');
   const [outlineColor, setOutlineColor] = useState('#ffffff');
   const [outlineWidth, setOutlineWidth] = useState(2.5);
-  const [fontSize, setFontSize] = useState(48);
+  const [fontSize, setFontSize] = useState(24);
   const [finalZoom, setFinalZoom] = useState(4);
   const [cameraSpeed, setCameraSpeed] = useState(2.5);
   const [animationSpeed, setAnimationSpeed] = useState(2.0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const mapRef = useRef(null);
   const mapWrapRef = useRef(null);
@@ -98,95 +318,173 @@ function App() {
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
 
+  // Detect mobile
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json')
       .then(r => r.json()).then(topojsonData => {
         const geojsonData = topojson.feature(topojsonData, topojsonData.objects.countries);
         geojsonData.features.sort((a,b) => a.properties.name.localeCompare(b.properties.name));
-        setCountries(geojsonData.features); setStatus('Ready. Select a country to begin.');
-      }).catch(err => { console.error(err); setStatus('Failed to load map data.'); });
+        setCountries(geojsonData.features); 
+        setStatus('Ready. Select a country to begin.');
+      }).catch(err => { 
+        console.error(err); 
+        setStatus('Failed to load map data.'); 
+      });
   }, []);
 
   useEffect(() => {
+    const container = document.getElementById('map');
     const map = new maplibregl.Map({
-      container: 'map',
-      style: { version: 8, sources: { 'sat-tiles': { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize: 256 } }, layers: [{ id: 'sat', type: 'raster', source: 'sat-tiles' }] },
-      center: [20, 20], zoom: 1.5, pitch: 0, antialias: true,
+      container: container,
+      style: { 
+        version: 8, 
+        sources: { 
+          'sat-tiles': { 
+            type: 'raster', 
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], 
+            tileSize: 256 
+          } 
+        }, 
+        layers: [{ id: 'sat', type: 'raster', source: 'sat-tiles' }] 
+      },
+      center: [20, 20], 
+      zoom: isMobile ? 2 : 1.5, 
+      pitch: 0, 
+      antialias: true,
       preserveDrawingBuffer: true,
       interactive: true
     });
-    map.on('style.load', () => { map.getCanvas().style.filter='contrast(1.1) saturate(1.1) brightness(0.95)'; });
-    mapRef.current = map;
-    map.on('load', () => {
-      map.addSource('country-src', { type: 'geojson', data: { type:'FeatureCollection', features: [] } });
-      map.addSource('ink-src', { type: 'geojson', data: { type:'FeatureCollection', features: [] } });
-      map.addLayer({ id: 'ink-fill', type: 'fill', source: 'ink-src', paint: { 'fill-color': '#000', 'fill-opacity':0 } });
-      map.addLayer({ id: 'country-outline-core', type: 'line', source: 'country-src', paint: { 'line-width': 2.5, 'line-color': 'transparent' } });
+    
+    map.on('style.load', () => { 
+      map.getCanvas().style.filter='contrast(1.1) saturate(1.1) brightness(0.95)'; 
     });
-    return () => { map.remove(); };
-  }, []);
+    
+    mapRef.current = map;
+    
+    map.on('load', () => {
+      map.addSource('country-src', { 
+        type: 'geojson', 
+        data: { type:'FeatureCollection', features: [] } 
+      });
+      map.addSource('ink-src', { 
+        type: 'geojson', 
+        data: { type:'FeatureCollection', features: [] } 
+      });
+      map.addLayer({ 
+        id: 'ink-fill', 
+        type: 'fill', 
+        source: 'ink-src', 
+        paint: { 'fill-color': '#000', 'fill-opacity':0 } 
+      });
+      map.addLayer({ 
+        id: 'country-outline-core', 
+        type: 'line', 
+        source: 'country-src', 
+        paint: { 'line-width': 2.5, 'line-color': 'transparent' } 
+      });
+    });
+    
+    // Resize listener for proper mobile rendering
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+    resizeObserver.observe(container);
+    
+    return () => { 
+      map.remove(); 
+      resizeObserver.disconnect();
+    };
+  }, [isMobile]);
 
   const applyPreviewStyles = useCallback(() => {
-    if (!selectedCountryName || !mapRef.current.isStyleLoaded()) return;
+    if (!selectedCountryName || !mapRef.current?.isStyleLoaded()) return;
     const map = mapRef.current;
     map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
     map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
     map.setPaintProperty('country-outline-core', 'line-opacity', 1);
+    
     if (markerRef.current) {
-        const markerElement = markerRef.current.getElement();
-        markerElement.style.fontSize = `${fontSize}px`;
-        markerElement.style.opacity = 1;
+      const markerElement = markerRef.current.getElement();
+      const mobileFontSize = isMobile ? Math.min(fontSize, 18) : fontSize;
+      markerElement.style.fontSize = `${mobileFontSize}px`;
+      markerElement.style.opacity = 1;
+      markerElement.style.zIndex = '1000';
     }
-  }, [selectedCountryName, outlineColor, outlineWidth, fontSize]);
+  }, [selectedCountryName, outlineColor, outlineWidth, fontSize, isMobile]);
   
   const updatePreview = useCallback(() => {
-      if (!selectedCountryName || isAnimating || countries.length === 0) return;
-      const originalFeature = countries.find(f => f.properties.name === selectedCountryName);
-      if (!originalFeature) return;
-      
-      const feature = getMainlandFeature(originalFeature);
-      if (!feature) return;
-      
-      const map = mapRef.current;
-      
-      if (markerRef.current) markerRef.current.remove();
-      
-      map.getSource('country-src').setData(feature);
-      const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
-      
-      const el = document.createElement('div');
-      el.className = 'country-marker-label';
-      el.textContent = selectedCountryName;
-      
-      markerRef.current = new maplibregl.Marker(el).setLngLat(centroidPt).addTo(map);
+    if (!selectedCountryName || isAnimating || countries.length === 0) return;
+    const originalFeature = countries.find(f => f.properties.name === selectedCountryName);
+    if (!originalFeature) return;
+    
+    const feature = getMainlandFeature(originalFeature);
+    if (!feature) return;
+    
+    const map = mapRef.current;
+    if (!map) return;
+    
+    if (markerRef.current) markerRef.current.remove();
+    
+    map.getSource('country-src').setData(feature);
+    const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
+    
+    const el = document.createElement('div');
+    el.className = 'country-marker-label';
+    el.textContent = selectedCountryName;
+    el.style.opacity = '1';
+    
+    markerRef.current = new maplibregl.Marker({ 
+      element: el,
+      offset: [0, -10]
+    }).setLngLat(centroidPt).addTo(map);
 
-      map.easeTo({ center: centroidPt, zoom: parseFloat(finalZoom), pitch: 0, bearing: 0, duration: 1000, easing: (t) => t * (2 - t) });
-      map.once('moveend', applyPreviewStyles);
-  }, [selectedCountryName, finalZoom, countries, applyPreviewStyles, isAnimating]);
+    const targetZoom = isMobile ? Math.min(parseFloat(finalZoom), 6) : parseFloat(finalZoom);
+    map.easeTo({ 
+      center: centroidPt, 
+      zoom: targetZoom, 
+      pitch: 0, 
+      bearing: 0, 
+      duration: 1000, 
+      easing: (t) => t * (2 - t) 
+    });
+    map.once('moveend', applyPreviewStyles);
+  }, [selectedCountryName, finalZoom, countries, applyPreviewStyles, isAnimating, isMobile]);
 
-  useEffect(() => { updatePreview(); }, [selectedCountryName, finalZoom, updatePreview]);
+  useEffect(() => { updatePreview(); }, [selectedCountryName, finalZoom, updatePreview, isMobile]);
   useEffect(() => { if (!isAnimating) applyPreviewStyles(); }, [outlineColor, outlineWidth, fontSize, isAnimating, applyPreviewStyles]);
 
   const startRecording = () => {
     const canvas = mapRef.current.getCanvas();
     const stream = canvas.captureStream(60);
-    const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 25000000 };
+    const options = { 
+      mimeType: 'video/webm;codecs=vp9', 
+      videoBitsPerSecond: 25000000 
+    };
     mediaRecorderRef.current = new MediaRecorder(stream, options);
     recordedChunksRef.current = [];
-    mediaRecorderRef.current.ondataavailable = (e) => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+    mediaRecorderRef.current.ondataavailable = (e) => { 
+      if (e.data.size > 0) recordedChunksRef.current.push(e.data); 
+    };
     mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        setDownloadUrl(url);
-        setStatus('Export complete! Add the name in your video editor.');
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      setDownloadUrl(url);
+      setStatus('Export complete! Download your HD video.');
     };
     mediaRecorderRef.current.start();
   };
   
   const stopRecording = () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-          mediaRecorderRef.current.stop();
-      }
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   function handleReset() {
@@ -195,13 +493,20 @@ function App() {
     setStatus('Ready. Select a country to begin.');
     if (markerRef.current) markerRef.current.remove();
     const map = mapRef.current;
-    map.getSource('country-src').setData({ type:'FeatureCollection', features: [] });
-    map.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
-    map.easeTo({ zoom: 1.5, center: [20,20], pitch: 0, bearing: 0, duration: 1500 });
+    if (map) {
+      map.getSource('country-src').setData({ type:'FeatureCollection', features: [] });
+      map.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
+      map.easeTo({ 
+        zoom: isMobile ? 2 : 1.5, 
+        center: [20,20], 
+        pitch: 0, 
+        bearing: 0, 
+        duration: 1500 
+      });
+    }
   }
 
   function handleGenerateAnimation() {
-    // === THE FIX for the Crash on Generate: Added safety checks ===
     if (!selectedCountryName || isAnimating || countries.length === 0 || !mapRef.current || !mapWrapRef.current) return;
     const originalFeature = countries.find(f => f.properties.name === selectedCountryName);
     if (!originalFeature) return;
@@ -209,87 +514,106 @@ function App() {
     const feature = getMainlandFeature(originalFeature);
     if (!feature) return;
     
-    setIsAnimating(true); setDownloadUrl(null);
+    setIsAnimating(true); 
+    setDownloadUrl(null);
     if (markerRef.current) markerRef.current.remove();
-    mapRef.current.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
-    mapRef.current.setPaintProperty('country-outline-core', 'line-opacity', 0);
+    
+    const map = mapRef.current;
+    map.getSource('ink-src').setData({ type:'FeatureCollection', features: [] });
+    map.setPaintProperty('country-outline-core', 'line-opacity', 0);
     setStatus('Preparing HD Export...');
 
+    // FIXED: Proper export resolution for mobile/desktop
     const mapWrap = mapWrapRef.current;
     const originalWidth = mapWrap.clientWidth;
     const originalHeight = mapWrap.clientHeight;
     
-    mapWrap.style.width = '1280px';
-    mapWrap.style.height = '720px';
-    mapRef.current.resize();
+    // Use 1280x720 for export, but respect mobile constraints
+    const exportWidth = 1280;
+    const exportHeight = 720;
+    
+    mapWrap.style.width = `${exportWidth}px`;
+    mapWrap.style.height = `${exportHeight}px`;
+    map.resize();
 
     setTimeout(() => {
-        setStatus('Recording animation...');
-        startRecording();
+      setStatus('Recording animation...');
+      startRecording();
 
-        const map = mapRef.current;
-        const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
-        const bbox = turf.bbox(feature);
-        const from = turf.point(centroidPt);
-        const to = turf.point([bbox[2], bbox[3]]);
-        const maxDist = turf.distance(from, to, { units: 'kilometers' }) * 1.05;
+      const centroidPt = turf.centerOfMass(feature).geometry.coordinates;
+      const bbox = turf.bbox(feature);
+      const from = turf.point(centroidPt);
+      const to = turf.point([bbox[2], bbox[3]]);
+      const maxDist = turf.distance(from, to, { units: 'kilometers' }) * 1.05;
 
-        const tl = gsap.timeline({
-          onUpdate: () => map.triggerRepaint(),
-          onComplete: () => {
-            setIsAnimating(false);
-            stopRecording();
-            mapWrap.style.width = `${originalWidth}px`;
-            mapWrap.style.height = `${originalHeight}px`;
-            mapRef.current.resize();
-            setTimeout(() => updatePreview(), 100); // Give resize a moment
-          }
-        });
+      const tl = gsap.timeline({
+        onUpdate: () => map.triggerRepaint(),
+        onComplete: () => {
+          setIsAnimating(false);
+          stopRecording();
+          // Restore original dimensions
+          mapWrap.style.width = `${originalWidth}px`;
+          mapWrap.style.height = `${originalHeight}px`;
+          map.resize();
+          setTimeout(() => {
+            updatePreview();
+            setStatus('Animation complete! Download ready.');
+          }, 200);
+        }
+      });
 
-        const cameraVars = {
-            zoom: map.getZoom(),
-            lng: map.getCenter().lng,
-            lat: map.getCenter().lat
-        };
+      const cameraVars = {
+        zoom: map.getZoom(),
+        lng: map.getCenter().lng,
+        lat: map.getCenter().lat
+      };
 
-        tl.to(cameraVars, {
-            duration: 1.5, ease: 'power2.inOut',
-            zoom: 1.5, lng: 20, lat: 20,
-            onUpdate: () => { map.setZoom(cameraVars.zoom); map.setCenter([cameraVars.lng, cameraVars.lat]); }
-        });
+      tl.to(cameraVars, {
+        duration: 1.5, ease: 'power2.inOut',
+        zoom: isMobile ? 2 : 1.5, lng: 20, lat: 20,
+        onUpdate: () => { 
+          map.setZoom(cameraVars.zoom); 
+          map.setCenter([cameraVars.lng, cameraVars.lat]); 
+        }
+      });
 
-        tl.to(cameraVars, {
-            duration: parseFloat(cameraSpeed), ease: 'power2.inOut',
-            zoom: parseFloat(finalZoom),
-            lng: centroidPt[0], lat: centroidPt[1],
-            onUpdate: () => { map.setZoom(cameraVars.zoom); map.setCenter([cameraVars.lng, cameraVars.lat]); }
-        });
-        
-        const outlineVars = { opacity: 0 };
-        tl.to(outlineVars, {
-            duration: parseFloat(animationSpeed) * 0.75, opacity: 1, ease: 'power1.inOut',
-            onStart: () => {
-                 map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
-                 map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
-            },
-            onUpdate: () => { map.setPaintProperty('country-outline-core', 'line-opacity', outlineVars.opacity); }
-        }, "-=1.0");
+      tl.to(cameraVars, {
+        duration: parseFloat(cameraSpeed), ease: 'power2.inOut',
+        zoom: parseFloat(finalZoom),
+        lng: centroidPt[0], lat: centroidPt[1],
+        onUpdate: () => { 
+          map.setZoom(cameraVars.zoom); 
+          map.setCenter([cameraVars.lng, cameraVars.lat]); 
+        }
+      });
+      
+      const outlineVars = { opacity: 0 };
+      tl.to(outlineVars, {
+        duration: parseFloat(animationSpeed) * 0.75, opacity: 1, ease: 'power1.inOut',
+        onStart: () => {
+          map.setPaintProperty('country-outline-core', 'line-width', parseFloat(outlineWidth));
+          map.setPaintProperty('country-outline-core', 'line-color', outlineColor);
+        },
+        onUpdate: () => { 
+          map.setPaintProperty('country-outline-core', 'line-opacity', outlineVars.opacity); 
+        }
+      }, "-=1.0");
 
-        const inkVars = { progress: 0 };
-        tl.to(inkVars, {
-          duration: parseFloat(animationSpeed), progress: 1, ease: 'power1.out',
-          onStart: () => {
-            map.setPaintProperty('ink-fill', 'fill-color', inkColor);
-            map.setPaintProperty('ink-fill', 'fill-opacity', 0.85);
-          },
-          onUpdate: () => {
-            const radiusKm = inkVars.progress * maxDist;
-            const circle = turf.circle(centroidPt, radiusKm, { steps: 128, units: 'kilometers' });
-            const intersection = turf.intersect(feature, circle);
-            map.getSource('ink-src').setData(intersection || { type: 'FeatureCollection', features: [] });
-          }
-        }, "<");
-    }, 100);
+      const inkVars = { progress: 0 };
+      tl.to(inkVars, {
+        duration: parseFloat(animationSpeed), progress: 1, ease: 'power1.out',
+        onStart: () => {
+          map.setPaintProperty('ink-fill', 'fill-color', inkColor);
+          map.setPaintProperty('ink-fill', 'fill-opacity', 0.85);
+        },
+        onUpdate: () => {
+          const radiusKm = inkVars.progress * maxDist;
+          const circle = turf.circle(centroidPt, radiusKm, { steps: 128, units: 'kilometers' });
+          const intersection = turf.intersect(feature, circle);
+          map.getSource('ink-src').setData(intersection || { type: 'FeatureCollection', features: [] });
+        }
+      }, "<");
+    }, 150);
   }
 
   return React.createElement('div',{className:'app'},
@@ -300,37 +624,39 @@ function App() {
         React.createElement('legend', null, '1. Target & Camera'),
         React.createElement('label', {htmlFor:'country-select'}, 'Country'),
         React.createElement('select',{id: 'country-select', value: selectedCountryName, onChange: (e) => setSelectedCountryName(e.target.value)},
-            React.createElement('option',{value:'', disabled: true},'-- Select a Country --'),
-            countries.map((f,i) => React.createElement('option', { key: i, value: f.properties.name }, f.properties.name))
+          React.createElement('option',{value:'', disabled: true},'-- Select Country --'),
+          countries.map((f,i) => React.createElement('option', { key: i, value: f.properties.name }, f.properties.name))
         ),
-        React.createElement('label', {htmlFor: 'zoom-slider'}, `Zoom Level: ${finalZoom}`),
-        React.createElement('input', {id: 'zoom-slider', type: 'range', min: '1', max: '8', step: '0.1', value: finalZoom, onChange: (e) => setFinalZoom(e.target.value) }),
+        React.createElement('label', {htmlFor: 'zoom-slider'}, `Zoom: ${finalZoom}`),
+        React.createElement('input', {id: 'zoom-slider', type: 'range', min: '1', max: isMobile ? '6' : '8', step: '0.1', value: finalZoom, onChange: (e) => setFinalZoom(e.target.value) }),
       ),
       React.createElement('fieldset', null,
         React.createElement('legend', null, '2. Style & Colors'),
         React.createElement('label', null, `Ink Color`),
         React.createElement('input', { type: 'color', value: inkColor, onChange: (e) => setInkColor(e.target.value) }),
-        React.createElement('label', {htmlFor: 'outline-color'}, `Outline Color`),
+        React.createElement('label', {htmlFor: 'outline-color'}, `Outline`),
         React.createElement('input', {id: 'outline-color', type: 'color', value: outlineColor, onChange: (e) => setOutlineColor(e.target.value) }),
-        React.createElement('label', {htmlFor: 'outline-width-slider'}, `Outline Width: ${outlineWidth}px`),
+        React.createElement('label', {htmlFor: 'outline-width-slider'}, `Width: ${outlineWidth}px`),
         React.createElement('input', {id: 'outline-width-slider', type: 'range', min: '1', max: '10', step: '0.5', value: outlineWidth, onChange: (e) => setOutlineWidth(e.target.value) }),
       ),
       React.createElement('fieldset', null,
-        React.createElement('legend', null, '3. Animation & Timing'),
-        React.createElement('label', null, `Camera Speed (s): ${cameraSpeed}`),
+        React.createElement('legend', null, '3. Animation'),
+        React.createElement('label', null, `Camera: ${cameraSpeed}s`),
         React.createElement('input', { type: 'range', min: '1', max: '5', step: '0.1', value: cameraSpeed, onChange: (e) => setCameraSpeed(e.target.value) }),
-        React.createElement('label', null, `Animation Speed (s): ${animationSpeed}`),
+        React.createElement('label', null, `Ink: ${animationSpeed}s`),
         React.createElement('input', { type: 'range', min: '1', max: '5', step: '0.1', value: animationSpeed, onChange: (e) => setAnimationSpeed(e.target.value) }),
-        React.createElement('label', {htmlFor: 'font-size-slider'}, `Font Size (Preview Only): ${fontSize}px`),
-        React.createElement('input', {id: 'font-size-slider', type: 'range', min: '14', max: '100', value: fontSize, onChange: (e) => setFontSize(e.target.value) })
       ),
       
       React.createElement('div', {className: 'button-group'},
-        React.createElement('button', {id: 'ready-button', onClick: handleGenerateAnimation, disabled: !selectedCountryName || isAnimating}, isAnimating ? 'Recording...' : 'Generate'),
+        React.createElement('button', {id: 'ready-button', onClick: handleGenerateAnimation, disabled: !selectedCountryName || isAnimating}, 
+          isAnimating ? 'Recording...' : 'Generate HD'
+        ),
         React.createElement('button', {id: 'reset-button', onClick: handleReset, disabled: isAnimating}, 'Reset')
       ),
       React.createElement('div',{className:'status'},status),
-      downloadUrl && React.createElement('a', {id: 'download-link', href: downloadUrl, download: `${selectedCountryName}-animation.webm`, style: {display: 'block'}}, 'Download HD Map Video (.webm)')
+      downloadUrl && React.createElement('a', {id: 'download-link', href: downloadUrl, download: `${selectedCountryName}-animation.webm`}, 
+        `📥 Download HD Video`
+      )
     ),
     React.createElement('div',{className:'map-wrap', ref: mapWrapRef},
       React.createElement('div',{id:'map'}),
